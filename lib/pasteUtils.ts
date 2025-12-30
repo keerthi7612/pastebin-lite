@@ -16,6 +16,7 @@ export async function createPaste(
   baseUrl: string
 ): Promise<CreatePasteResponse> {
   const id = generatePasteId();
+  console.log(`🆕 createPaste() - Generated ID: ${id}`);
 
   const paste: Paste = {
     content: request.content,
@@ -23,7 +24,9 @@ export async function createPaste(
     remaining_views: request.max_views,
   };
 
+  console.log(`   Storing paste with max_views: ${request.max_views}`);
   await setPaste(id, paste);
+  console.log(`   ✅ Paste stored successfully`);
 
   return {
     id,
@@ -32,19 +35,29 @@ export async function createPaste(
 }
 
 export async function fetchPaste(id: string): Promise<GetPasteResponse | null> {
+  console.log(`🔍 fetchPaste() called with id: ${id}`);
   const paste = await getPaste(id);
 
   if (!paste) {
+    console.log(`   ❌ Paste not found in storage`);
     return null;
   }
+
+  console.log(
+    `   ✅ Paste found. max_views: ${paste.max_views}, remaining_views: ${paste.remaining_views}`
+  );
 
   // Check if view limit has been reached (don't decrement here, just return)
   if (paste.max_views !== undefined && paste.remaining_views !== undefined) {
     if (paste.remaining_views <= 0) {
+      console.log(
+        `   ❌ View limit reached (remaining: ${paste.remaining_views})`
+      );
       return null;
     }
   }
 
+  console.log(`   ✅ Returning paste content`);
   return {
     content: paste.content,
     remaining_views: paste.remaining_views ?? null,

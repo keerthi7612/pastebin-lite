@@ -3,17 +3,26 @@ import { notFound } from "next/navigation";
 
 async function getPaste(id: string) {
   try {
-    const response = await fetch(`/api/pastes/${id}`, {
+    // Get the base URL for server-side fetch
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : `http://localhost:3000`;
+
+    console.log(`🔗 Fetching paste from: ${baseUrl}/api/pastes/${id}`);
+    const response = await fetch(`${baseUrl}/api/pastes/${id}`, {
       cache: "no-store",
     });
 
     if (!response.ok) {
+      console.warn(`❌ Fetch failed with status: ${response.status}`);
       return null;
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log(`✅ Paste fetched successfully`);
+    return data;
   } catch (error) {
-    console.error("Error fetching paste:", error);
+    console.error("❌ Error fetching paste:", error);
     return null;
   }
 }
