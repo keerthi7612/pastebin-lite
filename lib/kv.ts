@@ -2,12 +2,13 @@ import { kv } from "@vercel/kv";
 import type { Paste } from "./types";
 
 const TEST_MODE = process.env.TEST_MODE === "1";
+const USE_KV = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
 
 // In-memory fallback for local development without Vercel KV
 const inMemoryStore = new Map<string, Paste>();
 
 export async function getPaste(id: string): Promise<Paste | null> {
-  if (TEST_MODE || !process.env.KV_REST_API_URL) {
+  if (TEST_MODE || !USE_KV) {
     return inMemoryStore.get(id) || null;
   }
 
@@ -20,7 +21,7 @@ export async function getPaste(id: string): Promise<Paste | null> {
 }
 
 export async function setPaste(id: string, paste: Paste): Promise<void> {
-  if (TEST_MODE || !process.env.KV_REST_API_URL) {
+  if (TEST_MODE || !USE_KV) {
     inMemoryStore.set(id, paste);
     return;
   }

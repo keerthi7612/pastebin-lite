@@ -7,9 +7,18 @@ export async function GET(
 ) {
   try {
     const { id } = params;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Paste ID is required" },
+        { status: 400 }
+      );
+    }
+
     const paste = await fetchPaste(id);
 
     if (!paste) {
+      console.warn(`Paste not found or expired: ${id}`);
       return NextResponse.json(
         { error: "Paste not found or expired" },
         { status: 404 }
@@ -17,13 +26,16 @@ export async function GET(
     }
 
     // Consume one view
-    await consumeView(id);
+    const consumed = await consumeView(id);
+    if (!consumed) {
+      console.warn(`Failed to consume view for paste: ${id}`);
+    }
 
     return NextResponse.json(paste);
   } catch (error) {
     console.error("Error fetching paste:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Internal server error", details: String(error) },
       { status: 500 }
     );
   }
