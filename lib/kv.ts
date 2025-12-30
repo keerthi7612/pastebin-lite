@@ -2,7 +2,9 @@ import { kv } from "@vercel/kv";
 import type { Paste } from "./types";
 
 const TEST_MODE = process.env.TEST_MODE === "1";
-const USE_KV = process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN;
+const KV_URL = process.env.KV_REST_API_URL;
+const KV_TOKEN = process.env.KV_REST_API_TOKEN;
+const USE_KV = !!(KV_URL && KV_TOKEN);
 
 // In-memory fallback for local development without Vercel KV
 const inMemoryStore = new Map<string, Paste>();
@@ -10,8 +12,11 @@ const inMemoryStore = new Map<string, Paste>();
 console.log("🔧 KV Storage Config:", {
   TEST_MODE,
   USE_KV,
-  HAS_URL: !!process.env.KV_REST_API_URL,
-  HAS_TOKEN: !!process.env.KV_REST_API_TOKEN,
+  KV_URL: KV_URL ? "✅ SET" : "❌ MISSING",
+  KV_TOKEN: KV_TOKEN ? "✅ SET" : "❌ MISSING",
+  ENV_KEYS: Object.keys(process.env)
+    .filter((k) => k.includes("KV"))
+    .join(", "),
 });
 
 export async function getPaste(id: string): Promise<Paste | null> {

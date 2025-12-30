@@ -1,14 +1,16 @@
 import { escape } from "html-escaper";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 
 async function getPaste(id: string) {
   try {
-    // Get the base URL for server-side fetch
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : `http://localhost:3000`;
+    // Get the host from request headers (works on all environments)
+    const headersList = headers();
+    const host =
+      headersList.get("host") || "pastebin-lite-application.vercel.app";
+    const protocol = headersList.get("x-forwarded-proto") || "https";
 
-    console.log(`🔗 Fetching paste from: ${baseUrl}/api/pastes/${id}`);
+    const baseUrl = `${protocol}://${host}`;
     const response = await fetch(`${baseUrl}/api/pastes/${id}`, {
       cache: "no-store",
     });
